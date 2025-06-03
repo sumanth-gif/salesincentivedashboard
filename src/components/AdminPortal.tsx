@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,40 +8,41 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Upload, FileText, Sheet, Eye, Send, CheckCircle, Building2, TrendingUp, Target, Award } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { parseExcelFile, ExcelRowData } from "@/lib/excelParser";
+import { dataStore } from "@/store/dataStore";
 
 interface AdminPortalProps {
   onBack: () => void;
 }
 
-interface SalesData {
-  storeName: string;
-  city: string;
-  region: string;
-  totalTarget: number;
-  totalAchievement: number;
-  qualified: boolean;
-  totalIncentiveEarned: number;
-}
-
 export const AdminPortal = ({ onBack }: AdminPortalProps) => {
   const [uploadedScheme, setUploadedScheme] = useState<File | null>(null);
   const [uploadedData, setUploadedData] = useState<File | null>(null);
-  const [salesData, setSalesData] = useState<SalesData[]>([]);
+  const [salesData, setSalesData] = useState<ExcelRowData[]>([]);
   const [isPublished, setIsPublished] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Sample data for demonstration
-  const sampleData: SalesData[] = [
-    { storeName: "Store Alpha", city: "Mumbai", region: "West", totalTarget: 1000000, totalAchievement: 1200000, qualified: true, totalIncentiveEarned: 50000 },
-    { storeName: "Store Beta", city: "Delhi", region: "North", totalTarget: 800000, totalAchievement: 750000, qualified: false, totalIncentiveEarned: 0 },
-    { storeName: "Store Gamma", city: "Bangalore", region: "South", totalTarget: 1200000, totalAchievement: 1400000, qualified: true, totalIncentiveEarned: 75000 },
-    { storeName: "Store Delta", city: "Chennai", region: "South", totalTarget: 900000, totalAchievement: 950000, qualified: true, totalIncentiveEarned: 40000 },
-    { storeName: "Store Epsilon", city: "Pune", region: "West", totalTarget: 700000, totalAchievement: 650000, qualified: false, totalIncentiveEarned: 0 },
-  ];
+  useEffect(() => {
+    // Subscribe to store updates
+    const unsubscribe = dataStore.subscribe(() => {
+      setIsPublished(dataStore.isDataPublished());
+      setSalesData(dataStore.getSalesData());
+      setUploadedScheme(dataStore.getSchemeFile());
+    });
+
+    // Initialize with existing data
+    setIsPublished(dataStore.isDataPublished());
+    setSalesData(dataStore.getSalesData());
+    setUploadedScheme(dataStore.getSchemeFile());
+
+    return unsubscribe;
+  }, []);
 
   const handleSchemeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type === 'application/pdf') {
       setUploadedScheme(file);
+      dataStore.setSchemeFile(file);
       toast({
         title: "Scheme uploaded successfully!",
         description: `${file.name} has been uploaded.`,
@@ -54,35 +56,68 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     }
   };
 
-  const handleDataUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDataUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && (file.type.includes('spreadsheet') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
-      setUploadedData(file);
-      setSalesData(sampleData); // In real app, parse the Excel file
-      toast({
-        title: "Sales data uploaded successfully!",
-        description: `${file.name} has been processed and ${sampleData.length} records loaded.`,
-      });
-    } else {
+    if (!file) return;
+
+    const validTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv'
+    ];
+    
+    const isValidType = validTypes.includes(file.type) || 
+                       file.name.endsWith('.xlsx') || 
+                       file.name.endsWith('.xls') || 
+                       file.name.endsWith('.csv');
+
+    if (!isValidType) {
       toast({
         title: "Invalid file type",
-        description: "Please upload an Excel file (.xlsx or .xls).",
+        description: "Please upload an Excel file (.xlsx, .xls) or CSV file.",
         variant: "destructive",
       });
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const parsedData = await parseExcelFile(file);
+      
+      if (parsedData.length === 0) {
+        throw new Error('No valid data found in the file');
+      }
+
+      setUploadedData(file);
+      setSalesData(parsedData);
+      dataStore.setSalesData(parsedData);
+      
+      toast({
+        title: "Sales data uploaded successfully!",
+        description: `${file.name} has been processed and ${parsedData.length} records loaded.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error processing file",
+        description: error instanceof Error ? error.message : "Failed to process the uploaded file.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handlePublish = () => {
-    if (!uploadedScheme || !uploadedData) {
+    if (!dataStore.hasRequiredFiles()) {
       toast({
         title: "Missing files",
-        description: "Please upload both scheme PDF and sales data Excel file before publishing.",
+        description: "Please upload both scheme PDF and sales data file before publishing.",
         variant: "destructive",
       });
       return;
     }
     
-    setIsPublished(true);
+    dataStore.publish();
     toast({
       title: "Data published successfully!",
       description: "Sales incentive data is now available in the user portal.",
@@ -229,7 +264,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                     Upload Sales Data
                   </CardTitle>
                   <CardDescription>
-                    Upload Excel file with sales and incentive data
+                    Upload Excel or CSV file with sales and incentive data
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -240,13 +275,16 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors">
                     <Sheet className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                     <label htmlFor="data-upload" className="cursor-pointer">
-                      <span className="text-sm text-gray-600">Click to upload Excel file</span>
+                      <span className="text-sm text-gray-600">
+                        {isProcessing ? "Processing..." : "Click to upload Excel/CSV file"}
+                      </span>
                       <input
                         id="data-upload"
                         type="file"
-                        accept=".xlsx,.xls"
+                        accept=".xlsx,.xls,.csv"
                         className="hidden"
                         onChange={handleDataUpload}
+                        disabled={isProcessing}
                       />
                     </label>
                   </div>
@@ -283,13 +321,13 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                         PDF {uploadedScheme ? "✓" : "✗"}
                       </Badge>
                       <Badge variant={uploadedData ? "default" : "secondary"}>
-                        Excel {uploadedData ? "✓" : "✗"}
+                        Data {uploadedData ? "✓" : "✗"}
                       </Badge>
                     </div>
                   </div>
                   <Button 
                     onClick={handlePublish}
-                    disabled={!uploadedScheme || !uploadedData || isPublished}
+                    disabled={!dataStore.hasRequiredFiles() || isPublished}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
                     <Send className="h-4 w-4 mr-2" />
@@ -313,7 +351,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
               </CardHeader>
               <CardContent>
                 {salesData.length > 0 ? (
-                  <div className="rounded-md border">
+                  <div className="rounded-md border overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>

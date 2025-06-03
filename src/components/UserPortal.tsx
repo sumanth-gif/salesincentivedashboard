@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Store, Target, TrendingUp, Award, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Store, Target, TrendingUp, Award, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { dataStore } from "@/store/dataStore";
 
 interface UserPortalProps {
   onBack: () => void;
@@ -24,15 +25,33 @@ interface StoreData {
 export const UserPortal = ({ onBack }: UserPortalProps) => {
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [selectedStore, setSelectedStore] = useState<string>("");
+  const [storeData, setStoreData] = useState<StoreData[]>([]);
+  const [isDataPublished, setIsDataPublished] = useState(false);
 
-  // Sample data that would come from published admin data
-  const storeData: StoreData[] = [
-    { storeName: "Store Alpha", city: "Mumbai", region: "West", totalTarget: 1000000, totalAchievement: 1200000, qualified: true, totalIncentiveEarned: 50000 },
-    { storeName: "Store Beta", city: "Delhi", region: "North", totalTarget: 800000, totalAchievement: 750000, qualified: false, totalIncentiveEarned: 0 },
-    { storeName: "Store Gamma", city: "Bangalore", region: "South", totalTarget: 1200000, totalAchievement: 1400000, qualified: true, totalIncentiveEarned: 75000 },
-    { storeName: "Store Delta", city: "Chennai", region: "South", totalTarget: 900000, totalAchievement: 950000, qualified: true, totalIncentiveEarned: 40000 },
-    { storeName: "Store Epsilon", city: "Pune", region: "West", totalTarget: 700000, totalAchievement: 650000, qualified: false, totalIncentiveEarned: 0 },
-  ];
+  useEffect(() => {
+    // Subscribe to store updates
+    const unsubscribe = dataStore.subscribe(() => {
+      const data = dataStore.getSalesData();
+      const published = dataStore.isDataPublished();
+      
+      setStoreData(data);
+      setIsDataPublished(published);
+      
+      // Reset selections if data changes
+      if (data.length === 0) {
+        setSelectedRegion("");
+        setSelectedStore("");
+      }
+    });
+
+    // Initialize with existing data
+    const data = dataStore.getSalesData();
+    const published = dataStore.isDataPublished();
+    setStoreData(data);
+    setIsDataPublished(published);
+
+    return unsubscribe;
+  }, []);
 
   const regions = [...new Set(storeData.map(store => store.region))];
   const storesInRegion = storeData.filter(store => store.region === selectedRegion);
@@ -41,6 +60,36 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
   const achievementPercentage = selectedStoreData 
     ? Math.round((selectedStoreData.totalAchievement / selectedStoreData.totalTarget) * 100)
     : 0;
+
+  if (!isDataPublished) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" onClick={onBack}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">User Portal</h1>
+              <p className="text-gray-600">View your sales incentives and performance</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-6 py-16">
+          <div className="text-center max-w-md mx-auto">
+            <AlertCircle className="h-16 w-16 text-orange-400 mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-gray-600 mb-2">No Data Available</h3>
+            <p className="text-gray-500">
+              Sales incentive data has not been published yet. Please contact your administrator or check back later.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
@@ -198,8 +247,8 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                     </Badge>
                   </div>
                   <Progress 
-                    value={achievementPercentage} 
-                    className={`h-3 ${achievementPercentage >= 100 ? '[&>div]:bg-green-600' : '[&>div]:bg-blue-600'}`}
+                    value={Math.min(achievementPercentage, 100)} 
+                    className="h-3"
                   />
                 </div>
 

@@ -1,73 +1,122 @@
-# Welcome to your Lovable project
 
-## Project info
+# Sales Incentive Platform
 
-**URL**: https://lovable.dev/projects/f8a33011-b629-46ce-8184-6462d03d8fda
+A comprehensive web application for managing sales incentives with separate portals for administrators and users.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+### Admin Portal
+- Upload PDF scheme documents
+- Upload Excel/CSV sales data with automatic parsing
+- Download data template
+- View uploaded data in tabular format
+- Regional analytics and summaries
+- Publish data to make it available to users
 
-**Use Lovable**
+### User Portal
+- Select region and store
+- View sales targets and achievements
+- Check qualification status
+- View earned incentives
+- Detailed performance breakdown
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f8a33011-b629-46ce-8184-6462d03d8fda) and start prompting.
+## Technology Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: Shadcn/UI
+- **Icons**: Lucide React
+- **State Management**: Custom data store
+- **File Processing**: Custom Excel/CSV parser
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
+- Node.js 18 or higher
+- npm or yarn
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd sales-incentive-platform
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. Install dependencies:
+```bash
+npm install
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. Open http://localhost:8080 in your browser
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Building for Production
 
-**Use GitHub Codespaces**
+```bash
+npm run build
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+The built files will be in the `dist` directory.
 
-## What technologies are used for this project?
+### Deployment
 
-This project is built with:
+The application can be deployed to any static hosting service:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Netlify**: Connect your repository and deploy automatically
+- **Vercel**: Connect your repository for automatic deployments
+- **GitHub Pages**: Use GitHub Actions to deploy the built files
+- **AWS S3**: Upload the built files to an S3 bucket with static website hosting
 
-## How can I deploy this project?
+## Data Format
 
-Simply open [Lovable](https://lovable.dev/projects/f8a33011-b629-46ce-8184-6462d03d8fda) and click on Share -> Publish.
+### Excel/CSV Template
 
-## Can I connect a custom domain to my Lovable project?
+The sales data file should have the following columns:
+- Store Name
+- City
+- Region
+- Total Target (numeric)
+- Total Achievement (numeric)
+- Qualified/Not Qualified (text)
+- Total Incentive Earned (numeric)
 
-Yes, you can!
+Download the template from the admin portal to get the correct format.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Usage
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. **Admin Setup**:
+   - Access the Admin Portal
+   - Upload the PDF scheme document
+   - Download and fill the sales data template
+   - Upload the completed Excel/CSV file
+   - Review the data in the View Data tab
+   - Check regional analytics
+   - Publish the data to make it available to users
+
+2. **User Access**:
+   - Access the User Portal
+   - Select your region and store
+   - View your performance metrics
+   - Check qualification status and earned incentives
+
+## Environment Variables
+
+No environment variables are required for basic functionality. The application runs entirely in the browser.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
