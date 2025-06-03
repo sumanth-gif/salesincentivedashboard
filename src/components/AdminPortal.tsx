@@ -90,9 +90,47 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
   };
 
   const downloadTemplate = () => {
+    // Create CSV content for the template
+    const headers = [
+      "Store Name",
+      "City", 
+      "Region",
+      "Total Target",
+      "Total Achievement",
+      "Qualified/Not Qualified",
+      "Total Incentive Earned"
+    ];
+    
+    // Add sample data row for reference
+    const sampleRow = [
+      "Sample Store",
+      "Sample City",
+      "Sample Region", 
+      "1000000",
+      "1200000",
+      "Qualified",
+      "50000"
+    ];
+    
+    const csvContent = [
+      headers.join(","),
+      sampleRow.join(",")
+    ].join("\n");
+    
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "sales_data_template.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
     toast({
       title: "Template downloaded",
-      description: "Excel template has been downloaded to your device.",
+      description: "Sales data template (CSV format) has been downloaded to your device.",
     });
   };
 
