@@ -36,6 +36,8 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
   }, []);
 
   const handleDataUpload = async (file: File) => {
+    console.log('Uploading file:', file.name, 'Type:', file.type);
+    
     const validTypes = [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'application/vnd.ms-excel',
@@ -59,6 +61,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     setIsProcessing(true);
     try {
       const parsedData = await parseExcelFile(file);
+      console.log('File parsed successfully:', parsedData.length, 'records');
       
       if (parsedData.length === 0) {
         throw new Error('No valid data found in the file');
@@ -73,6 +76,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
         description: `${file.name} has been processed and ${parsedData.length} records loaded.`,
       });
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Error processing file",
         description: error instanceof Error ? error.message : "Failed to process the uploaded file.",
