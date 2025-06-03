@@ -199,8 +199,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                   </div>
                   <Progress 
                     value={achievementPercentage} 
-                    className="h-3" 
-                    indicatorClassName={achievementPercentage >= 100 ? "bg-green-600" : "bg-blue-600"}
+                    className={`h-3 ${achievementPercentage >= 100 ? '[&>div]:bg-green-600' : '[&>div]:bg-blue-600'}`}
                   />
                 </div>
 

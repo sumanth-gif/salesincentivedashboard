@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Upload, FileText, Spreadsheet, Eye, Send, CheckCircle, Building2, TrendingUp, Target, Award } from "lucide-react";
+import { ArrowLeft, Upload, FileText, Sheet, Eye, Send, CheckCircle, Building2, TrendingUp, Target, Award } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface AdminPortalProps {
@@ -188,7 +187,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Spreadsheet className="h-5 w-5 text-green-600" />
+                    <Sheet className="h-5 w-5 text-green-600" />
                     Upload Sales Data
                   </CardTitle>
                   <CardDescription>
@@ -197,11 +196,11 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Button variant="outline" size="sm" onClick={downloadTemplate} className="w-full">
-                    <Spreadsheet className="h-4 w-4 mr-2" />
+                    <Sheet className="h-4 w-4 mr-2" />
                     Download Template
                   </Button>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors">
-                    <Spreadsheet className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <Sheet className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                     <label htmlFor="data-upload" className="cursor-pointer">
                       <span className="text-sm text-gray-600">Click to upload Excel file</span>
                       <input
@@ -310,7 +309,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <Spreadsheet className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <Sheet className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                     <p>No sales data uploaded yet</p>
                   </div>
                 )}
