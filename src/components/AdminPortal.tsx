@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,17 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Upload, FileText, Sheet, Eye, Send, CheckCircle, Building2, TrendingUp, Target, Award } from "lucide-react";
+import { ArrowLeft, Sheet, Eye, Send, CheckCircle, Building2, TrendingUp, Target, Award } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { parseExcelFile, ExcelRowData } from "@/lib/excelParser";
 import { dataStore } from "@/store/dataStore";
+import { FileUpload } from "./FileUpload";
 
 interface AdminPortalProps {
   onBack: () => void;
 }
 
 export const AdminPortal = ({ onBack }: AdminPortalProps) => {
-  const [uploadedScheme, setUploadedScheme] = useState<File | null>(null);
   const [uploadedData, setUploadedData] = useState<File | null>(null);
   const [salesData, setSalesData] = useState<ExcelRowData[]>([]);
   const [isPublished, setIsPublished] = useState(false);
@@ -27,39 +26,16 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     const unsubscribe = dataStore.subscribe(() => {
       setIsPublished(dataStore.isDataPublished());
       setSalesData(dataStore.getSalesData());
-      setUploadedScheme(dataStore.getSchemeFile());
     });
 
     // Initialize with existing data
     setIsPublished(dataStore.isDataPublished());
     setSalesData(dataStore.getSalesData());
-    setUploadedScheme(dataStore.getSchemeFile());
 
     return unsubscribe;
   }, []);
 
-  const handleSchemeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      setUploadedScheme(file);
-      dataStore.setSchemeFile(file);
-      toast({
-        title: "Scheme uploaded successfully!",
-        description: `${file.name} has been uploaded.`,
-      });
-    } else {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a PDF file.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDataUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const handleDataUpload = async (file: File) => {
     const validTypes = [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'application/vnd.ms-excel',
@@ -108,10 +84,10 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
   };
 
   const handlePublish = () => {
-    if (!dataStore.hasRequiredFiles()) {
+    if (salesData.length === 0) {
       toast({
-        title: "Missing files",
-        description: "Please upload both scheme PDF and sales data file before publishing.",
+        title: "Missing data",
+        description: "Please upload sales data file before publishing.",
         variant: "destructive",
       });
       return;
@@ -201,7 +177,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
-            <p className="text-gray-600">Manage sales incentive schemes and data</p>
+            <p className="text-gray-600">Manage sales incentive data</p>
           </div>
           {isPublished && (
             <Badge className="ml-auto bg-green-100 text-green-800">
@@ -221,41 +197,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
           </TabsList>
 
           <TabsContent value="upload" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Scheme Upload */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                    Upload Scheme PDF
-                  </CardTitle>
-                  <CardDescription>
-                    Upload the sales incentive scheme document
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                    <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <label htmlFor="scheme-upload" className="cursor-pointer">
-                      <span className="text-sm text-gray-600">Click to upload PDF scheme</span>
-                      <input
-                        id="scheme-upload"
-                        type="file"
-                        accept=".pdf"
-                        className="hidden"
-                        onChange={handleSchemeUpload}
-                      />
-                    </label>
-                  </div>
-                  {uploadedScheme && (
-                    <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm text-green-800">{uploadedScheme.name}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
+            <div className="grid gap-6">
               {/* Data Upload */}
               <Card>
                 <CardHeader>
@@ -272,22 +214,18 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                     <Sheet className="h-4 w-4 mr-2" />
                     Download Template
                   </Button>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors">
-                    <Sheet className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <label htmlFor="data-upload" className="cursor-pointer">
+                  <FileUpload
+                    accept=".xlsx,.xls,.csv"
+                    onFileSelect={handleDataUpload}
+                    disabled={isProcessing}
+                  >
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors">
+                      <Sheet className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                       <span className="text-sm text-gray-600">
                         {isProcessing ? "Processing..." : "Click to upload Excel/CSV file"}
                       </span>
-                      <input
-                        id="data-upload"
-                        type="file"
-                        accept=".xlsx,.xls,.csv"
-                        className="hidden"
-                        onChange={handleDataUpload}
-                        disabled={isProcessing}
-                      />
-                    </label>
-                  </div>
+                    </div>
+                  </FileUpload>
                   {uploadedData && (
                     <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
                       <CheckCircle className="h-4 w-4 text-green-600" />
@@ -317,9 +255,6 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                       Ready to publish? This will make the data visible in the user portal.
                     </p>
                     <div className="flex gap-2">
-                      <Badge variant={uploadedScheme ? "default" : "secondary"}>
-                        PDF {uploadedScheme ? "✓" : "✗"}
-                      </Badge>
                       <Badge variant={uploadedData ? "default" : "secondary"}>
                         Data {uploadedData ? "✓" : "✗"}
                       </Badge>
@@ -327,7 +262,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                   </div>
                   <Button 
                     onClick={handlePublish}
-                    disabled={!dataStore.hasRequiredFiles() || isPublished}
+                    disabled={salesData.length === 0 || isPublished}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
                     <Send className="h-4 w-4 mr-2" />

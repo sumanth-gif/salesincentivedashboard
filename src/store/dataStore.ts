@@ -13,7 +13,6 @@ interface SalesData {
 class DataStore {
   private salesData: SalesData[] = [];
   private isPublished: boolean = false;
-  private schemeFile: File | null = null;
   private listeners: (() => void)[] = [];
 
   subscribe(listener: () => void) {
@@ -36,15 +35,6 @@ class DataStore {
     return this.isPublished ? this.salesData : [];
   }
 
-  setSchemeFile(file: File) {
-    this.schemeFile = file;
-    this.notify();
-  }
-
-  getSchemeFile(): File | null {
-    return this.schemeFile;
-  }
-
   publish() {
     this.isPublished = true;
     this.notify();
@@ -55,7 +45,7 @@ class DataStore {
   }
 
   hasRequiredFiles(): boolean {
-    return this.schemeFile !== null && this.salesData.length > 0;
+    return this.salesData.length > 0;
   }
 }
 
