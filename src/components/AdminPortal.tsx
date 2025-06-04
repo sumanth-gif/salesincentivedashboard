@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -107,6 +108,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
   const downloadTemplate = () => {
     // Create CSV content for the template
     const headers = [
+      "Store Code",
       "Store Name",
       "City", 
       "Region",
@@ -118,6 +120,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     
     // Add sample data row for reference
     const sampleRow = [
+      "ST001",
       "Sample Store",
       "Sample City",
       "Sample Region", 
@@ -294,6 +297,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>Store Code</TableHead>
                           <TableHead>Store Name</TableHead>
                           <TableHead>City</TableHead>
                           <TableHead>Region</TableHead>
@@ -306,6 +310,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                       <TableBody>
                         {salesData.map((store, index) => (
                           <TableRow key={index}>
+                            <TableCell className="font-medium">{store.storeCode}</TableCell>
                             <TableCell className="font-medium">{store.storeName}</TableCell>
                             <TableCell>{store.city}</TableCell>
                             <TableCell>{store.region}</TableCell>

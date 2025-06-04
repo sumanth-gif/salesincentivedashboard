@@ -2,6 +2,7 @@
 import * as XLSX from 'xlsx';
 
 export interface ExcelRowData {
+  storeCode: string;
   storeName: string;
   city: string;
   region: string;
@@ -32,15 +33,16 @@ export const parseExcelFile = (file: File): Promise<ExcelRowData[]> => {
             const columns = line.split(',').map(col => col.trim().replace(/"/g, ''));
             
             return {
-              storeName: columns[0] || '',
-              city: columns[1] || '',
-              region: columns[2] || '',
-              totalTarget: parseInt(columns[3]) || 0,
-              totalAchievement: parseInt(columns[4]) || 0,
-              qualified: columns[5]?.toLowerCase() === 'qualified',
-              totalIncentiveEarned: parseInt(columns[6]) || 0,
+              storeCode: columns[0] || '',
+              storeName: columns[1] || '',
+              city: columns[2] || '',
+              region: columns[3] || '',
+              totalTarget: parseInt(columns[4]) || 0,
+              totalAchievement: parseInt(columns[5]) || 0,
+              qualified: columns[6]?.toLowerCase() === 'qualified',
+              totalIncentiveEarned: parseInt(columns[7]) || 0,
             };
-          }).filter(row => row.storeName);
+          }).filter(row => row.storeCode && row.storeName);
         } else {
           // Parse Excel file
           const workbook = XLSX.read(data, { type: 'array' });
@@ -52,17 +54,18 @@ export const parseExcelFile = (file: File): Promise<ExcelRowData[]> => {
           const dataRows = jsonData.slice(1) as any[][];
           
           parsedData = dataRows
-            .filter(row => row && row.length > 0 && row[0]) // Filter out empty rows
+            .filter(row => row && row.length > 0 && row[0] && row[1]) // Filter out empty rows
             .map(row => ({
-              storeName: String(row[0] || ''),
-              city: String(row[1] || ''),
-              region: String(row[2] || ''),
-              totalTarget: parseInt(String(row[3])) || 0,
-              totalAchievement: parseInt(String(row[4])) || 0,
-              qualified: String(row[5] || '').toLowerCase() === 'qualified',
-              totalIncentiveEarned: parseInt(String(row[6])) || 0,
+              storeCode: String(row[0] || ''),
+              storeName: String(row[1] || ''),
+              city: String(row[2] || ''),
+              region: String(row[3] || ''),
+              totalTarget: parseInt(String(row[4])) || 0,
+              totalAchievement: parseInt(String(row[5])) || 0,
+              qualified: String(row[6] || '').toLowerCase() === 'qualified',
+              totalIncentiveEarned: parseInt(String(row[7])) || 0,
             }))
-            .filter(row => row.storeName);
+            .filter(row => row.storeCode && row.storeName);
         }
         
         console.log('Parsed data:', parsedData);

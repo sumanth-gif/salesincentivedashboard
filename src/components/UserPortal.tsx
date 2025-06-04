@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Store, Target, TrendingUp, Award, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { dataStore } from "@/store/dataStore";
@@ -13,6 +13,7 @@ interface UserPortalProps {
 }
 
 interface StoreData {
+  storeCode: string;
   storeName: string;
   city: string;
   region: string;
@@ -23,42 +24,44 @@ interface StoreData {
 }
 
 export const UserPortal = ({ onBack }: UserPortalProps) => {
-  const [selectedRegion, setSelectedRegion] = useState<string>("");
-  const [selectedStore, setSelectedStore] = useState<string>("");
-  const [storeData, setStoreData] = useState<StoreData[]>([]);
+  const [storeCode, setStoreCode] = useState<string>("");
+  const [storeData, setStoreData] = useState<StoreData | null>(null);
   const [isDataPublished, setIsDataPublished] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     // Subscribe to store updates
     const unsubscribe = dataStore.subscribe(() => {
-      const data = dataStore.getSalesData();
       const published = dataStore.isDataPublished();
-      
-      setStoreData(data);
       setIsDataPublished(published);
       
-      // Reset selections if data changes
-      if (data.length === 0) {
-        setSelectedRegion("");
-        setSelectedStore("");
+      // If data becomes unpublished, clear the store data
+      if (!published) {
+        setStoreData(null);
+        setStoreCode("");
       }
     });
 
     // Initialize with existing data
-    const data = dataStore.getSalesData();
-    const published = dataStore.isDataPublished();
-    setStoreData(data);
-    setIsDataPublished(published);
+    setIsDataPublished(dataStore.isDataPublished());
 
     return unsubscribe;
   }, []);
 
-  const regions = [...new Set(storeData.map(store => store.region))];
-  const storesInRegion = storeData.filter(store => store.region === selectedRegion);
-  const selectedStoreData = storeData.find(store => store.storeName === selectedStore);
+  const handleStoreCodeSearch = () => {
+    if (!storeCode.trim()) {
+      setStoreData(null);
+      return;
+    }
 
-  const achievementPercentage = selectedStoreData 
-    ? Math.round((selectedStoreData.totalAchievement / selectedStoreData.totalTarget) * 100)
+    setIsSearching(true);
+    const foundStore = dataStore.getStoreData(storeCode.trim());
+    setStoreData(foundStore || null);
+    setIsSearching(false);
+  };
+
+  const achievementPercentage = storeData 
+    ? Math.round((storeData.totalAchievement / storeData.totalTarget) * 100)
     : 0;
 
   if (!isDataPublished) {
@@ -108,63 +111,43 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
       </div>
 
       <div className="container mx-auto px-6 py-8">
-        {/* Selection Section */}
+        {/* Store Code Input Section */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Store className="h-5 w-5 text-blue-600" />
-              Select Your Store
+              Enter Your Store Code
             </CardTitle>
             <CardDescription>
-              Choose your region and store to view incentive details
+              Enter your unique store code to view your incentive details
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Region</label>
-                <Select value={selectedRegion} onValueChange={(value) => {
-                  setSelectedRegion(value);
-                  setSelectedStore(""); // Reset store selection when region changes
-                }}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a region" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {regions.map((region) => (
-                      <SelectItem key={region} value={region}>
-                        {region}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Store</label>
-                <Select 
-                  value={selectedStore} 
-                  onValueChange={setSelectedStore}
-                  disabled={!selectedRegion}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a store" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {storesInRegion.map((store) => (
-                      <SelectItem key={store.storeName} value={store.storeName}>
-                        {store.storeName} - {store.city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex gap-4">
+              <Input
+                type="text"
+                placeholder="Enter store code (e.g., ST001)"
+                value={storeCode}
+                onChange={(e) => setStoreCode(e.target.value)}
+                className="flex-1"
+              />
+              <Button 
+                onClick={handleStoreCodeSearch}
+                disabled={!storeCode.trim() || isSearching}
+              >
+                {isSearching ? "Searching..." : "Search"}
+              </Button>
             </div>
+            {storeCode && !storeData && !isSearching && (
+              <p className="text-sm text-red-600 mt-2">
+                Store code not found. Please check your store code and try again.
+              </p>
+            )}
           </CardContent>
         </Card>
 
         {/* Store Details */}
-        {selectedStoreData ? (
+        {storeData ? (
           <div className="space-y-6">
             {/* Performance Overview */}
             <div className="grid md:grid-cols-4 gap-4">
@@ -174,7 +157,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                     <Target className="h-8 w-8 text-blue-600" />
                     <div>
                       <p className="text-sm text-gray-600">Sales Target</p>
-                      <p className="text-2xl font-bold">₹{selectedStoreData.totalTarget.toLocaleString()}</p>
+                      <p className="text-2xl font-bold">₹{storeData.totalTarget.toLocaleString()}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -186,7 +169,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                     <TrendingUp className="h-8 w-8 text-green-600" />
                     <div>
                       <p className="text-sm text-gray-600">Achievement</p>
-                      <p className="text-2xl font-bold">₹{selectedStoreData.totalAchievement.toLocaleString()}</p>
+                      <p className="text-2xl font-bold">₹{storeData.totalAchievement.toLocaleString()}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -195,7 +178,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
               <Card className="border-l-4 border-l-purple-500">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">
-                    {selectedStoreData.qualified ? (
+                    {storeData.qualified ? (
                       <CheckCircle className="h-8 w-8 text-green-600" />
                     ) : (
                       <XCircle className="h-8 w-8 text-red-500" />
@@ -203,10 +186,10 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                     <div>
                       <p className="text-sm text-gray-600">Status</p>
                       <Badge 
-                        variant={selectedStoreData.qualified ? "default" : "secondary"}
-                        className={selectedStoreData.qualified ? "bg-green-100 text-green-800" : ""}
+                        variant={storeData.qualified ? "default" : "secondary"}
+                        className={storeData.qualified ? "bg-green-100 text-green-800" : ""}
                       >
-                        {selectedStoreData.qualified ? "Qualified" : "Not Qualified"}
+                        {storeData.qualified ? "Qualified" : "Not Qualified"}
                       </Badge>
                     </div>
                   </div>
@@ -219,7 +202,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                     <Award className="h-8 w-8 text-orange-600" />
                     <div>
                       <p className="text-sm text-gray-600">Incentive Earned</p>
-                      <p className="text-2xl font-bold text-orange-600">₹{selectedStoreData.totalIncentiveEarned.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-orange-600">₹{storeData.totalIncentiveEarned.toLocaleString()}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -256,12 +239,14 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                 <div className="rounded-lg bg-gray-50 p-4">
                   <h4 className="font-medium mb-3">Store Information</h4>
                   <div className="grid grid-cols-2 gap-y-2 text-sm">
+                    <div className="text-gray-600">Store Code:</div>
+                    <div className="font-medium">{storeData.storeCode}</div>
                     <div className="text-gray-600">Store Name:</div>
-                    <div className="font-medium">{selectedStoreData.storeName}</div>
+                    <div className="font-medium">{storeData.storeName}</div>
                     <div className="text-gray-600">City:</div>
-                    <div className="font-medium">{selectedStoreData.city}</div>
+                    <div className="font-medium">{storeData.city}</div>
                     <div className="text-gray-600">Region:</div>
-                    <div className="font-medium">{selectedStoreData.region}</div>
+                    <div className="font-medium">{storeData.region}</div>
                   </div>
                 </div>
 
@@ -271,11 +256,11 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-700">Sales Target:</span>
-                      <span className="font-medium">₹{selectedStoreData.totalTarget.toLocaleString()}</span>
+                      <span className="font-medium">₹{storeData.totalTarget.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-700">Achievement:</span>
-                      <span className="font-medium">₹{selectedStoreData.totalAchievement.toLocaleString()}</span>
+                      <span className="font-medium">₹{storeData.totalAchievement.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-700">Achievement %:</span>
@@ -283,19 +268,19 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-700">Qualification Status:</span>
-                      <Badge variant={selectedStoreData.qualified ? "default" : "secondary"} className={selectedStoreData.qualified ? "bg-green-100 text-green-800" : ""}>
-                        {selectedStoreData.qualified ? "Qualified" : "Not Qualified"}
+                      <Badge variant={storeData.qualified ? "default" : "secondary"} className={storeData.qualified ? "bg-green-100 text-green-800" : ""}>
+                        {storeData.qualified ? "Qualified" : "Not Qualified"}
                       </Badge>
                     </div>
                     <div className="border-t border-green-200 pt-3 flex justify-between font-bold">
                       <span>Total Incentive Earned:</span>
-                      <span className="text-xl text-green-700">₹{selectedStoreData.totalIncentiveEarned.toLocaleString()}</span>
+                      <span className="text-xl text-green-700">₹{storeData.totalIncentiveEarned.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Note */}
-                {!selectedStoreData.qualified && (
+                {!storeData.qualified && (
                   <div className="border-l-4 border-orange-400 bg-orange-50 p-4 text-orange-800 text-sm">
                     <div className="flex items-start">
                       <div className="ml-3">
@@ -316,9 +301,9 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
             <div className="mb-4">
               <Store className="h-16 w-16 text-gray-300 mx-auto" />
             </div>
-            <h3 className="text-xl font-medium text-gray-600 mb-2">Select your region and store</h3>
+            <h3 className="text-xl font-medium text-gray-600 mb-2">Enter your store code</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              Choose your region and store from the dropdown menus above to view your sales incentive details.
+              Enter your unique store code in the field above to view your sales incentive details.
             </p>
           </div>
         )}

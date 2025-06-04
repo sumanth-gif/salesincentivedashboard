@@ -1,6 +1,7 @@
 
 // Simple data store for sharing data between portals
 interface SalesData {
+  storeCode: string;
   storeName: string;
   city: string;
   region: string;
@@ -41,6 +42,10 @@ class DataStore {
   getAllSalesData(): SalesData[] {
     // This method returns data regardless of publish status (for admin view)
     return this.salesData;
+  }
+
+  getStoreData(storeCode: string): SalesData | undefined {
+    return this.isPublished ? this.salesData.find(store => store.storeCode === storeCode) : undefined;
   }
 
   publish() {
