@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,11 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Sheet, Eye, Send, CheckCircle, Building2, TrendingUp, Target, Award } from "lucide-react";
+import { ArrowLeft, Sheet, Eye, Send, CheckCircle, Building2, TrendingUp, Target, Award, Settings } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { parseExcelFile, ExcelRowData } from "@/lib/excelParser";
 import { dataStore } from "@/store/dataStore";
 import { FileUpload } from "./FileUpload";
+import { ChangePasscode } from "./ChangePasscode";
 
 interface AdminPortalProps {
   onBack: () => void;
@@ -21,6 +21,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
   const [salesData, setSalesData] = useState<ExcelRowData[]>([]);
   const [isPublished, setIsPublished] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showChangePasscode, setShowChangePasscode] = useState(false);
 
   useEffect(() => {
     // Subscribe to store updates
@@ -186,12 +187,22 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
             <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
             <p className="text-gray-600">Manage sales incentive data</p>
           </div>
-          {isPublished && (
-            <Badge className="ml-auto bg-green-100 text-green-800">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              Published
-            </Badge>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowChangePasscode(true)}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Change Passcode
+            </Button>
+            {isPublished && (
+              <Badge className="bg-green-100 text-green-800">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Published
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 
@@ -437,6 +448,11 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <ChangePasscode 
+        isOpen={showChangePasscode} 
+        onClose={() => setShowChangePasscode(false)} 
+      />
     </div>
   );
 };

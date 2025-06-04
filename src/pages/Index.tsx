@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,9 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, Users, TrendingUp, Award } from "lucide-react";
 import { AdminPortal } from "@/components/AdminPortal";
 import { UserPortal } from "@/components/UserPortal";
+import { PasscodeInput } from "@/components/PasscodeInput";
 
 const Index = () => {
-  const [activePortal, setActivePortal] = useState<"landing" | "admin" | "user">("landing");
+  const [activePortal, setActivePortal] = useState<"landing" | "admin" | "user" | "admin-login">("landing");
+
+  if (activePortal === "admin-login") {
+    return (
+      <PasscodeInput 
+        onSuccess={() => setActivePortal("admin")} 
+        onBack={() => setActivePortal("landing")} 
+      />
+    );
+  }
 
   if (activePortal === "admin") {
     return <AdminPortal onBack={() => setActivePortal("landing")} />;
@@ -107,7 +116,7 @@ const Index = () => {
               </div>
               <Button 
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={() => setActivePortal("admin")}
+                onClick={() => setActivePortal("admin-login")}
               >
                 Access Admin Portal
               </Button>
