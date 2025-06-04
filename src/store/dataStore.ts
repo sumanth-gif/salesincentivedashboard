@@ -16,6 +16,43 @@ class DataStore {
   private isPublished: boolean = false;
   private listeners: (() => void)[] = [];
 
+  constructor() {
+    // Load persisted data on initialization
+    this.loadPersistedData();
+  }
+
+  private loadPersistedData() {
+    try {
+      const savedData = localStorage.getItem('sales_data');
+      const savedPublishStatus = localStorage.getItem('data_published');
+      
+      if (savedData) {
+        this.salesData = JSON.parse(savedData);
+        console.log('DataStore: Loaded persisted data:', this.salesData.length, 'records');
+      }
+      
+      if (savedPublishStatus) {
+        this.isPublished = JSON.parse(savedPublishStatus);
+        console.log('DataStore: Loaded publish status:', this.isPublished);
+      }
+    } catch (error) {
+      console.error('DataStore: Error loading persisted data:', error);
+      // Reset to defaults if loading fails
+      this.salesData = [];
+      this.isPublished = false;
+    }
+  }
+
+  private persistData() {
+    try {
+      localStorage.setItem('sales_data', JSON.stringify(this.salesData));
+      localStorage.setItem('data_published', JSON.stringify(this.isPublished));
+      console.log('DataStore: Data persisted to localStorage');
+    } catch (error) {
+      console.error('DataStore: Error persisting data:', error);
+    }
+  }
+
   subscribe(listener: () => void) {
     this.listeners.push(listener);
     return () => {
@@ -31,6 +68,7 @@ class DataStore {
   setSalesData(data: SalesData[]) {
     console.log('DataStore: Setting sales data:', data.length, 'records');
     this.salesData = [...data]; // Create a new array to ensure reactivity
+    this.persistData(); // Persist the new data
     this.notify();
   }
 
@@ -51,6 +89,7 @@ class DataStore {
   publish() {
     console.log('DataStore: Publishing data, records:', this.salesData.length);
     this.isPublished = true;
+    this.persistData(); // Persist the publish status
     this.notify();
   }
 
