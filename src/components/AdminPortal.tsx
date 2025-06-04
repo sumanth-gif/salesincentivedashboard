@@ -25,12 +25,12 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     // Subscribe to store updates
     const unsubscribe = dataStore.subscribe(() => {
       setIsPublished(dataStore.isDataPublished());
-      setSalesData(dataStore.getSalesData());
+      setSalesData(dataStore.getAllSalesData()); // Use getAllSalesData for admin view
     });
 
     // Initialize with existing data
     setIsPublished(dataStore.isDataPublished());
-    setSalesData(dataStore.getSalesData());
+    setSalesData(dataStore.getAllSalesData());
 
     return unsubscribe;
   }, []);
