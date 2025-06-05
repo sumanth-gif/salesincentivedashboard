@@ -39,7 +39,7 @@ const Index = () => {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Android Premier League (Jun to Oct)
+            Android Premier League Dashboard <span className="text-lg font-normal">(Jun to Oct)</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Streamline your sales points management with our comprehensive platform designed for administrators and sales teams.
@@ -51,7 +51,7 @@ const Index = () => {
           <Card className="text-center hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <Building2 className="h-8 w-8 text-blue-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 mb-2">Store Management</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">Sell Android Smartphones</h3>
               <p className="text-sm text-gray-600">Manage multiple stores across regions</p>
             </CardContent>
           </Card>
@@ -59,7 +59,7 @@ const Index = () => {
           <Card className="text-center hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <Users className="h-8 w-8 text-green-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 mb-2">Sales Teams</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">Achieve Monthly Target</h3>
               <p className="text-sm text-gray-600">Track sales team performance</p>
             </CardContent>
           </Card>
@@ -67,7 +67,7 @@ const Index = () => {
           <Card className="text-center hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <TrendingUp className="h-8 w-8 text-purple-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 mb-2">Analytics</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">Earn Points, Redeem for Incentives</h3>
               <p className="text-sm text-gray-600">Comprehensive reporting and insights</p>
             </CardContent>
           </Card>
@@ -75,7 +75,7 @@ const Index = () => {
           <Card className="text-center hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <Award className="h-8 w-8 text-orange-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 mb-2">Points System</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">Monthly Bonanza</h3>
               <p className="text-sm text-gray-600">Automated points calculations</p>
             </CardContent>
           </Card>
@@ -169,7 +169,7 @@ const Index = () => {
         {/* Footer */}
         <div className="text-center mt-12 pt-8 border-t border-gray-200">
           <p className="text-gray-600">
-            Streamline your sales points management with real-time data synchronization
+            Beta version. Developed for internal purposes only.
           </p>
         </div>
       </div>
