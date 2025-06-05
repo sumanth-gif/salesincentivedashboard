@@ -222,6 +222,12 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     return value.toLocaleString();
   };
 
+  // Safe currency formatting function
+  const formatCurrency = (value: number | undefined | null) => {
+    if (value === null || value === undefined || isNaN(value)) return '₹0';
+    return `₹${value.toLocaleString()}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -412,14 +418,14 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                             <TableCell className="font-medium">{store.storeName}</TableCell>
                             <TableCell>{store.city}</TableCell>
                             <TableCell>{store.region}</TableCell>
-                            <TableCell>₹{store.totalTarget.toLocaleString()}</TableCell>
-                            <TableCell>₹{store.totalAchievement.toLocaleString()}</TableCell>
+                            <TableCell>{formatCurrency(store.totalTarget)}</TableCell>
+                            <TableCell>{formatCurrency(store.totalAchievement)}</TableCell>
                             <TableCell>
                               <Badge variant={store.qualified ? "default" : "secondary"}>
                                 {store.qualified ? "Qualified" : "Not Qualified"}
                               </Badge>
                             </TableCell>
-                            <TableCell>{store.totalPointsEarned.toLocaleString()}</TableCell>
+                            <TableCell>{formatNumber(store.totalPointsEarned)}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
