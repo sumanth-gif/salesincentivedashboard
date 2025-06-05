@@ -1,17 +1,19 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({base: '/salesincentivedashboard/'}) => ({
+export default defineConfig((config) => ({
+  base: '/salesincentivedashboard/',
   server: {
     host: "::",
     port: 8080,
   },
   plugins: [
     react(),
-    mode === 'development' &&
+    config.mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
   resolve: {
