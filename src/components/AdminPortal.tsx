@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -177,7 +176,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     });
   };
 
-  // Calculate regional summaries
+  // Calculate regional summaries with proper null checks
   const regionalSummary = salesData.reduce((acc, store) => {
     if (!acc[store.region]) {
       acc[store.region] = {
@@ -190,26 +189,37 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     }
     
     acc[store.region].storeCount++;
-    acc[store.region].totalTarget += store.totalTarget;
-    acc[store.region].totalAchievement += store.totalAchievement;
+    acc[store.region].totalTarget += store.totalTarget || 0;
+    acc[store.region].totalAchievement += store.totalAchievement || 0;
     if (store.qualified) acc[store.region].totalQualified++;
-    acc[store.region].totalPoints += store.totalPointsEarned;
+    acc[store.region].totalPoints += store.totalPointsEarned || 0;
     
     return acc;
   }, {} as Record<string, any>);
 
   const formatDateTime = (date: Date | null) => {
     if (!date) return 'Never';
-    return new Intl.DateTimeFormat('en-IN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true,
-      timeZone: 'Asia/Kolkata'
-    }).format(date);
+    try {
+      return new Intl.DateTimeFormat('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata'
+      }).format(date);
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return 'Invalid Date';
+    }
+  };
+
+  // Safe number formatting function
+  const formatNumber = (value: number | undefined | null) => {
+    if (value === null || value === undefined || isNaN(value)) return '0';
+    return value.toLocaleString();
   };
 
   return (
@@ -433,7 +443,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                     <Building2 className="h-8 w-8 text-blue-600" />
                     <div>
                       <p className="text-sm text-gray-600">Total Stores</p>
-                      <p className="text-2xl font-bold">{salesData.length}</p>
+                      <p className="text-2xl font-bold">{formatNumber(salesData.length)}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -445,7 +455,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                     <Target className="h-8 w-8 text-green-600" />
                     <div>
                       <p className="text-sm text-gray-600">Total Target</p>
-                      <p className="text-2xl font-bold">₹{salesData.reduce((sum, store) => sum + store.totalTarget, 0).toLocaleString()}</p>
+                      <p className="text-2xl font-bold">₹{formatNumber(salesData.reduce((sum, store) => sum + (store.totalTarget || 0), 0))}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -457,7 +467,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                     <TrendingUp className="h-8 w-8 text-purple-600" />
                     <div>
                       <p className="text-sm text-gray-600">Total Achievement</p>
-                      <p className="text-2xl font-bold">₹{salesData.reduce((sum, store) => sum + store.totalAchievement, 0).toLocaleString()}</p>
+                      <p className="text-2xl font-bold">₹{formatNumber(salesData.reduce((sum, store) => sum + (store.totalAchievement || 0), 0))}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -469,7 +479,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                     <Award className="h-8 w-8 text-orange-600" />
                     <div>
                       <p className="text-sm text-gray-600">Total Points</p>
-                      <p className="text-2xl font-bold">{salesData.reduce((sum, store) => sum + store.totalPointsEarned, 0).toLocaleString()}</p>
+                      <p className="text-2xl font-bold">{formatNumber(salesData.reduce((sum, store) => sum + (store.totalPointsEarned || 0), 0))}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -490,31 +500,31 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                           <div>
                             <p className="text-sm text-gray-600">Stores</p>
-                            <p className="text-xl font-bold">{data.storeCount}</p>
+                            <p className="text-xl font-bold">{formatNumber(data.storeCount)}</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-600">Target</p>
-                            <p className="text-xl font-bold">₹{data.totalTarget.toLocaleString()}</p>
+                            <p className="text-xl font-bold">₹{formatNumber(data.totalTarget)}</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-600">Achievement</p>
-                            <p className="text-xl font-bold">₹{data.totalAchievement.toLocaleString()}</p>
+                            <p className="text-xl font-bold">₹{formatNumber(data.totalAchievement)}</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-600">Qualified</p>
-                            <p className="text-xl font-bold">{data.totalQualified}</p>
+                            <p className="text-xl font-bold">{formatNumber(data.totalQualified)}</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-600">Points</p>
-                            <p className="text-xl font-bold">{data.totalPoints.toLocaleString()}</p>
+                            <p className="text-xl font-bold">{formatNumber(data.totalPoints)}</p>
                           </div>
                         </div>
                         <div className="mt-4">
                           <div className="flex justify-between text-sm mb-1">
                             <span>Achievement Rate</span>
-                            <span>{Math.round((data.totalAchievement / data.totalTarget) * 100)}%</span>
+                            <span>{data.totalTarget > 0 ? Math.round((data.totalAchievement / data.totalTarget) * 100) : 0}%</span>
                           </div>
-                          <Progress value={(data.totalAchievement / data.totalTarget) * 100} className="h-2" />
+                          <Progress value={data.totalTarget > 0 ? (data.totalAchievement / data.totalTarget) * 100 : 0} className="h-2" />
                         </div>
                       </div>
                     ))}
