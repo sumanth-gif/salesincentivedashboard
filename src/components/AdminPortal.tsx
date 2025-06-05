@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Sheet, Eye, Send, CheckCircle, Building2, TrendingUp, Target, Award, Settings } from "lucide-react";
+import { ArrowLeft, Sheet, Eye, Send, CheckCircle, Building2, TrendingUp, Target, Award, Settings, FileText, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { parseExcelFile, ExcelRowData } from "@/lib/excelParser";
 import { dataStore } from "@/store/dataStore";
@@ -22,17 +23,21 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
   const [isPublished, setIsPublished] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showChangePasscode, setShowChangePasscode] = useState(false);
+  const [uploadedPDF, setUploadedPDF] = useState<File | null>(null);
+  const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
 
   useEffect(() => {
     // Subscribe to store updates
     const unsubscribe = dataStore.subscribe(() => {
       setIsPublished(dataStore.isDataPublished());
       setSalesData(dataStore.getAllSalesData()); // Use getAllSalesData for admin view
+      setLastUpdateTime(dataStore.getLastUpdateTime());
     });
 
     // Initialize with existing data
     setIsPublished(dataStore.isDataPublished());
     setSalesData(dataStore.getAllSalesData());
+    setLastUpdateTime(dataStore.getLastUpdateTime());
 
     return unsubscribe;
   }, []);
@@ -89,6 +94,25 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     }
   };
 
+  const handlePDFUpload = (file: File) => {
+    if (!file.type.includes('pdf')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadedPDF(file);
+    dataStore.setIncentiveConstruct(file);
+    
+    toast({
+      title: "Points construct uploaded successfully!",
+      description: `${file.name} has been uploaded and is now available for download.`,
+    });
+  };
+
   const handlePublish = () => {
     if (salesData.length === 0) {
       toast({
@@ -102,7 +126,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     dataStore.publish();
     toast({
       title: "Data published successfully!",
-      description: "Sales incentive data is now available in the user portal.",
+      description: "Sales points data is now available in the user portal.",
     });
   };
 
@@ -116,7 +140,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
       "Total Target",
       "Total Achievement",
       "Qualified/Not Qualified",
-      "Total Incentive Earned"
+      "Total Points Earned"
     ];
     
     // Add sample data row for reference
@@ -128,7 +152,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
       "1000000",
       "1200000",
       "Qualified",
-      "50000"
+      "500"
     ];
     
     const csvContent = [
@@ -161,7 +185,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
         totalTarget: 0,
         totalAchievement: 0,
         totalQualified: 0,
-        totalIncentive: 0,
+        totalPoints: 0,
       };
     }
     
@@ -169,10 +193,24 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
     acc[store.region].totalTarget += store.totalTarget;
     acc[store.region].totalAchievement += store.totalAchievement;
     if (store.qualified) acc[store.region].totalQualified++;
-    acc[store.region].totalIncentive += store.totalIncentiveEarned;
+    acc[store.region].totalPoints += store.totalPointsEarned;
     
     return acc;
   }, {} as Record<string, any>);
+
+  const formatDateTime = (date: Date | null) => {
+    if (!date) return 'Never';
+    return new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata'
+    }).format(date);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -185,9 +223,15 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
-            <p className="text-gray-600">Manage sales incentive data</p>
+            <p className="text-gray-600">Manage sales points data</p>
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-4">
+            {lastUpdateTime && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Clock className="h-4 w-4" />
+                <span>Last Updated: {formatDateTime(lastUpdateTime)}</span>
+              </div>
+            )}
             <Button 
               variant="outline" 
               size="sm" 
@@ -216,6 +260,39 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
 
           <TabsContent value="upload" className="space-y-6">
             <div className="grid gap-6">
+              {/* PDF Upload */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-red-600" />
+                    Upload Points Construct
+                  </CardTitle>
+                  <CardDescription>
+                    Upload PDF file with points construct details
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <FileUpload
+                    accept=".pdf"
+                    onFileSelect={handlePDFUpload}
+                    disabled={false}
+                  >
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors">
+                      <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <span className="text-sm text-gray-600">
+                        Click to upload PDF file
+                      </span>
+                    </div>
+                  </FileUpload>
+                  {uploadedPDF && (
+                    <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <CheckCircle className="h-4 w-4 text-red-600" />
+                      <span className="text-sm text-red-800">{uploadedPDF.name}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Data Upload */}
               <Card>
                 <CardHeader>
@@ -224,7 +301,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                     Upload Sales Data
                   </CardTitle>
                   <CardDescription>
-                    Upload Excel or CSV file with sales and incentive data
+                    Upload Excel or CSV file with sales and points data
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -263,7 +340,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                   Publish Data
                 </CardTitle>
                 <CardDescription>
-                  Make the incentive data available to users
+                  Make the points data available to users
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -299,7 +376,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                   Sales Data Overview
                 </CardTitle>
                 <CardDescription>
-                  View all uploaded sales and incentive data
+                  View all uploaded sales and points data
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -315,7 +392,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                           <TableHead>Target</TableHead>
                           <TableHead>Achievement</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead>Incentive</TableHead>
+                          <TableHead>Points Earned</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -332,7 +409,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                                 {store.qualified ? "Qualified" : "Not Qualified"}
                               </Badge>
                             </TableCell>
-                            <TableCell>₹{store.totalIncentiveEarned.toLocaleString()}</TableCell>
+                            <TableCell>{store.totalPointsEarned.toLocaleString()}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -391,8 +468,8 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                   <div className="flex items-center gap-3">
                     <Award className="h-8 w-8 text-orange-600" />
                     <div>
-                      <p className="text-sm text-gray-600">Total Incentives</p>
-                      <p className="text-2xl font-bold">₹{salesData.reduce((sum, store) => sum + store.totalIncentiveEarned, 0).toLocaleString()}</p>
+                      <p className="text-sm text-gray-600">Total Points</p>
+                      <p className="text-2xl font-bold">{salesData.reduce((sum, store) => sum + store.totalPointsEarned, 0).toLocaleString()}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -428,8 +505,8 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                             <p className="text-xl font-bold">{data.totalQualified}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-600">Incentives</p>
-                            <p className="text-xl font-bold">₹{data.totalIncentive.toLocaleString()}</p>
+                            <p className="text-sm text-gray-600">Points</p>
+                            <p className="text-xl font-bold">{data.totalPoints.toLocaleString()}</p>
                           </div>
                         </div>
                         <div className="mt-4">

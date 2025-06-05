@@ -8,13 +8,15 @@ interface SalesData {
   totalTarget: number;
   totalAchievement: number;
   qualified: boolean;
-  totalIncentiveEarned: number;
+  totalPointsEarned: number; // Changed from totalIncentiveEarned
 }
 
 class DataStore {
   private salesData: SalesData[] = [];
   private isPublished: boolean = false;
   private listeners: (() => void)[] = [];
+  private incentiveConstruct: File | null = null;
+  private lastUpdateTime: Date | null = null;
 
   constructor() {
     // Load persisted data on initialization
@@ -25,6 +27,7 @@ class DataStore {
     try {
       const savedData = localStorage.getItem('sales_data');
       const savedPublishStatus = localStorage.getItem('data_published');
+      const savedUpdateTime = localStorage.getItem('last_update_time');
       
       if (savedData) {
         this.salesData = JSON.parse(savedData);
@@ -35,11 +38,17 @@ class DataStore {
         this.isPublished = JSON.parse(savedPublishStatus);
         console.log('DataStore: Loaded publish status:', this.isPublished);
       }
+
+      if (savedUpdateTime) {
+        this.lastUpdateTime = new Date(savedUpdateTime);
+        console.log('DataStore: Loaded last update time:', this.lastUpdateTime);
+      }
     } catch (error) {
       console.error('DataStore: Error loading persisted data:', error);
       // Reset to defaults if loading fails
       this.salesData = [];
       this.isPublished = false;
+      this.lastUpdateTime = null;
     }
   }
 
@@ -47,6 +56,9 @@ class DataStore {
     try {
       localStorage.setItem('sales_data', JSON.stringify(this.salesData));
       localStorage.setItem('data_published', JSON.stringify(this.isPublished));
+      if (this.lastUpdateTime) {
+        localStorage.setItem('last_update_time', this.lastUpdateTime.toISOString());
+      }
       console.log('DataStore: Data persisted to localStorage');
     } catch (error) {
       console.error('DataStore: Error persisting data:', error);
@@ -68,6 +80,7 @@ class DataStore {
   setSalesData(data: SalesData[]) {
     console.log('DataStore: Setting sales data:', data.length, 'records');
     this.salesData = [...data]; // Create a new array to ensure reactivity
+    this.lastUpdateTime = new Date();
     this.persistData(); // Persist the new data
     this.notify();
   }
@@ -99,6 +112,19 @@ class DataStore {
 
   hasRequiredFiles(): boolean {
     return this.salesData.length > 0;
+  }
+
+  setIncentiveConstruct(file: File) {
+    this.incentiveConstruct = file;
+    this.notify();
+  }
+
+  getIncentiveConstruct(): File | null {
+    return this.incentiveConstruct;
+  }
+
+  getLastUpdateTime(): Date | null {
+    return this.lastUpdateTime;
   }
 }
 

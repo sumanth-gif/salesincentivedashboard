@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Store, Target, TrendingUp, Award, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, Store, Target, TrendingUp, Award, CheckCircle, XCircle, AlertCircle, Download, Clock } from "lucide-react";
 import { dataStore } from "@/store/dataStore";
+import { toast } from "@/hooks/use-toast";
 
 interface UserPortalProps {
   onBack: () => void;
@@ -20,7 +21,7 @@ interface StoreData {
   totalTarget: number;
   totalAchievement: number;
   qualified: boolean;
-  totalIncentiveEarned: number;
+  totalPointsEarned: number;
 }
 
 export const UserPortal = ({ onBack }: UserPortalProps) => {
@@ -28,12 +29,14 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
   const [storeData, setStoreData] = useState<StoreData | null>(null);
   const [isDataPublished, setIsDataPublished] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
 
   useEffect(() => {
     // Subscribe to store updates
     const unsubscribe = dataStore.subscribe(() => {
       const published = dataStore.isDataPublished();
       setIsDataPublished(published);
+      setLastUpdateTime(dataStore.getLastUpdateTime());
       
       // If data becomes unpublished, clear the store data
       if (!published) {
@@ -44,6 +47,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
 
     // Initialize with existing data
     setIsDataPublished(dataStore.isDataPublished());
+    setLastUpdateTime(dataStore.getLastUpdateTime());
 
     return unsubscribe;
   }, []);
@@ -60,9 +64,49 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
     setIsSearching(false);
   };
 
+  const handleDownloadConstruct = () => {
+    const construct = dataStore.getIncentiveConstruct();
+    if (!construct) {
+      toast({
+        title: "No construct available",
+        description: "Points construct has not been uploaded yet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const url = URL.createObjectURL(construct);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = construct.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Download started",
+      description: "Points construct is downloading...",
+    });
+  };
+
   const achievementPercentage = storeData 
     ? Math.round((storeData.totalAchievement / storeData.totalTarget) * 100)
     : 0;
+
+  const formatDateTime = (date: Date | null) => {
+    if (!date) return 'Never';
+    return new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata'
+    }).format(date);
+  };
 
   if (!isDataPublished) {
     return (
@@ -76,7 +120,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">User Portal</h1>
-              <p className="text-gray-600">View your sales incentives and performance</p>
+              <p className="text-gray-600">View your sales points and performance</p>
             </div>
           </div>
         </div>
@@ -86,7 +130,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
             <AlertCircle className="h-16 w-16 text-orange-400 mx-auto mb-4" />
             <h3 className="text-xl font-medium text-gray-600 mb-2">No Data Available</h3>
             <p className="text-gray-500">
-              Sales incentive data has not been published yet. Please contact your administrator or check back later.
+              Sales points data has not been published yet. Please contact your administrator or check back later.
             </p>
           </div>
         </div>
@@ -105,7 +149,23 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">User Portal</h1>
-            <p className="text-gray-600">View your sales incentives and performance</p>
+            <p className="text-gray-600">View your sales points and performance</p>
+          </div>
+          <div className="ml-auto flex items-center gap-4">
+            {lastUpdateTime && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Clock className="h-4 w-4" />
+                <span>Last Updated: {formatDateTime(lastUpdateTime)}</span>
+              </div>
+            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleDownloadConstruct}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Points Construct
+            </Button>
           </div>
         </div>
       </div>
@@ -119,7 +179,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
               Enter Your Store Code
             </CardTitle>
             <CardDescription>
-              Enter your unique store code to view your incentive details
+              Enter your unique store code to view your points details
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -201,8 +261,8 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                   <div className="flex items-center gap-3">
                     <Award className="h-8 w-8 text-orange-600" />
                     <div>
-                      <p className="text-sm text-gray-600">Incentive Earned</p>
-                      <p className="text-2xl font-bold text-orange-600">₹{storeData.totalIncentiveEarned.toLocaleString()}</p>
+                      <p className="text-sm text-gray-600">Points Earned</p>
+                      <p className="text-2xl font-bold text-orange-600">{storeData.totalPointsEarned.toLocaleString()}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -217,7 +277,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                   Performance Details
                 </CardTitle>
                 <CardDescription>
-                  Detailed breakdown of your sales performance and incentives
+                  Detailed breakdown of your sales performance and points
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -250,9 +310,9 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                   </div>
                 </div>
 
-                {/* Incentive Calculation */}
+                {/* Points Calculation */}
                 <div className="rounded-lg bg-green-50 p-4 border border-green-200">
-                  <h4 className="font-medium mb-3">Incentive Calculation</h4>
+                  <h4 className="font-medium mb-3">Points Calculation</h4>
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-700">Sales Target:</span>
@@ -273,8 +333,11 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                       </Badge>
                     </div>
                     <div className="border-t border-green-200 pt-3 flex justify-between font-bold">
-                      <span>Total Incentive Earned:</span>
-                      <span className="text-xl text-green-700">₹{storeData.totalIncentiveEarned.toLocaleString()}</span>
+                      <span>Total Points Earned:</span>
+                      <span className="text-xl text-green-700">{storeData.totalPointsEarned.toLocaleString()}</span>
+                    </div>
+                    <div className="text-xs text-gray-600 mt-2">
+                      * 1 Point = ₹100
                     </div>
                   </div>
                 </div>
@@ -286,7 +349,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
                       <div className="ml-3">
                         <h3 className="font-medium mb-2">Information</h3>
                         <p className="leading-relaxed">
-                          Your store has not qualified for incentives this cycle. To qualify, stores must achieve at least 95% of their sales target. Please contact your regional manager for more details.
+                          Your store has not qualified for points this cycle. To qualify, stores must achieve at least 95% of their sales target. Please contact your regional manager for more details.
                         </p>
                       </div>
                     </div>
@@ -303,7 +366,7 @@ export const UserPortal = ({ onBack }: UserPortalProps) => {
             </div>
             <h3 className="text-xl font-medium text-gray-600 mb-2">Enter your store code</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              Enter your unique store code in the field above to view your sales incentive details.
+              Enter your unique store code in the field above to view your sales points details.
             </p>
           </div>
         )}

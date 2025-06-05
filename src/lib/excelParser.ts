@@ -9,7 +9,7 @@ export interface ExcelRowData {
   totalTarget: number;
   totalAchievement: number;
   qualified: boolean;
-  totalIncentiveEarned: number;
+  totalPointsEarned: number; // Changed from totalIncentiveEarned
 }
 
 export const parseExcelFile = (file: File): Promise<ExcelRowData[]> => {
@@ -40,7 +40,7 @@ export const parseExcelFile = (file: File): Promise<ExcelRowData[]> => {
               totalTarget: parseInt(columns[4]) || 0,
               totalAchievement: parseInt(columns[5]) || 0,
               qualified: columns[6]?.toLowerCase() === 'qualified',
-              totalIncentiveEarned: parseInt(columns[7]) || 0,
+              totalPointsEarned: parseInt(columns[7]) || 0, // Changed from totalIncentiveEarned
             };
           }).filter(row => row.storeCode && row.storeName);
         } else {
@@ -63,7 +63,7 @@ export const parseExcelFile = (file: File): Promise<ExcelRowData[]> => {
               totalTarget: parseInt(String(row[4])) || 0,
               totalAchievement: parseInt(String(row[5])) || 0,
               qualified: String(row[6] || '').toLowerCase() === 'qualified',
-              totalIncentiveEarned: parseInt(String(row[7])) || 0,
+              totalPointsEarned: parseInt(String(row[7])) || 0, // Changed from totalIncentiveEarned
             }))
             .filter(row => row.storeCode && row.storeName);
         }

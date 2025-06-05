@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,10 +39,10 @@ const Index = () => {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Sales Incentive Platform
+            Android Premier League (Jun to Oct)
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Streamline your sales incentive management with our comprehensive platform designed for administrators and sales teams.
+            Streamline your sales points management with our comprehensive platform designed for administrators and sales teams.
           </p>
         </div>
 
@@ -74,8 +75,8 @@ const Index = () => {
           <Card className="text-center hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <Award className="h-8 w-8 text-orange-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 mb-2">Incentives</h3>
-              <p className="text-sm text-gray-600">Automated incentive calculations</p>
+              <h3 className="font-semibold text-gray-900 mb-2">Points System</h3>
+              <p className="text-sm text-gray-600">Automated points calculations</p>
             </CardContent>
           </Card>
         </div>
@@ -92,7 +93,7 @@ const Index = () => {
               </div>
               <CardTitle className="text-2xl text-gray-900">Admin Portal</CardTitle>
               <CardDescription className="text-gray-600">
-                Manage schemes, upload data, and publish incentives
+                Manage schemes, upload data, and publish points
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -103,7 +104,7 @@ const Index = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge variant="secondary" className="text-xs">Excel</Badge>
-                  <span className="text-sm text-gray-700">Import sales data and incentives</span>
+                  <span className="text-sm text-gray-700">Import sales data and points</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge variant="secondary" className="text-xs">Analytics</Badge>
@@ -133,7 +134,7 @@ const Index = () => {
               </div>
               <CardTitle className="text-2xl text-gray-900">User Portal</CardTitle>
               <CardDescription className="text-gray-600">
-                View your sales targets and earned incentives
+                View your sales targets and earned points
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -151,8 +152,8 @@ const Index = () => {
                   <span className="text-sm text-gray-700">Check qualification status</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="text-xs border-green-200 text-green-700">Incentives</Badge>
-                  <span className="text-sm text-gray-700">View earned incentives</span>
+                  <Badge variant="outline" className="text-xs border-green-200 text-green-700">Points</Badge>
+                  <span className="text-sm text-gray-700">View earned points</span>
                 </div>
               </div>
               <Button 
@@ -168,7 +169,7 @@ const Index = () => {
         {/* Footer */}
         <div className="text-center mt-12 pt-8 border-t border-gray-200">
           <p className="text-gray-600">
-            Streamline your sales incentive management with real-time data synchronization
+            Streamline your sales points management with real-time data synchronization
           </p>
         </div>
       </div>
