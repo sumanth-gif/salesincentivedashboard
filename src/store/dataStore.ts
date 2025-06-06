@@ -1,14 +1,14 @@
-
 // Simple data store for sharing data between portals
 interface SalesData {
   storeCode: string;
   storeName: string;
   city: string;
   region: string;
+  clusterName: string; // Added this field
   totalTarget: number;
   totalAchievement: number;
   qualified: boolean;
-  totalPointsEarned: number; // Changed from totalIncentiveEarned
+  totalPointsEarned: number;
 }
 
 class DataStore {
@@ -125,6 +125,18 @@ class DataStore {
 
   getLastUpdateTime(): Date | null {
     return this.lastUpdateTime;
+  }
+
+  // Add method to get cluster data
+  getClusterData(clusterName: string): SalesData[] {
+    return this.isPublished ? this.salesData.filter(store => store.clusterName === clusterName) : [];
+  }
+
+  // Get all unique cluster names
+  getClusterNames(): string[] {
+    if (!this.isPublished) return [];
+    const clusters = new Set(this.salesData.map(store => store.clusterName).filter(Boolean));
+    return Array.from(clusters);
   }
 }
 

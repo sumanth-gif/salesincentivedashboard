@@ -136,6 +136,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
       "Store Name",
       "City", 
       "Region",
+      "Cluster Name", // Added this column
       "Total Target",
       "Total Achievement",
       "Qualified/Not Qualified",
@@ -147,7 +148,8 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
       "ST001",
       "Sample Store",
       "Sample City",
-      "Sample Region", 
+      "Sample Region",
+      "Cluster A", // Added this value
       "1000000",
       "1200000",
       "Qualified",
@@ -405,6 +407,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                           <TableHead>Store Name</TableHead>
                           <TableHead>City</TableHead>
                           <TableHead>Region</TableHead>
+                          <TableHead>Cluster Name</TableHead>
                           <TableHead>Target</TableHead>
                           <TableHead>Achievement</TableHead>
                           <TableHead>Status</TableHead>
@@ -418,6 +421,7 @@ export const AdminPortal = ({ onBack }: AdminPortalProps) => {
                             <TableCell className="font-medium">{store.storeName}</TableCell>
                             <TableCell>{store.city}</TableCell>
                             <TableCell>{store.region}</TableCell>
+                            <TableCell>{store.clusterName || '-'}</TableCell>
                             <TableCell>{formatCurrency(store.totalTarget)}</TableCell>
                             <TableCell>{formatCurrency(store.totalAchievement)}</TableCell>
                             <TableCell>

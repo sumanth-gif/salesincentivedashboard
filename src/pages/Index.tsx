@@ -3,13 +3,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, TrendingUp, Award } from "lucide-react";
+import { Building2, Users, TrendingUp, Award, UsersRound, Store } from "lucide-react";
 import { AdminPortal } from "@/components/AdminPortal";
 import { UserPortal } from "@/components/UserPortal";
 import { PasscodeInput } from "@/components/PasscodeInput";
+import { UserAccessModal } from "@/components/UserAccessModal"; 
 
 const Index = () => {
-  const [activePortal, setActivePortal] = useState<"landing" | "admin" | "user" | "admin-login">("landing");
+  const [activePortal, setActivePortal] = useState<"landing" | "admin" | "user" | "admin-login" | "user-access">("landing");
+  const [showUserAccessModal, setShowUserAccessModal] = useState(false);
 
   if (activePortal === "admin-login") {
     return (
@@ -26,6 +28,19 @@ const Index = () => {
 
   if (activePortal === "user") {
     return <UserPortal onBack={() => setActivePortal("landing")} />;
+  }
+
+  if (activePortal === "user-access") {
+    return (
+      <UserAccessModal 
+        isOpen={showUserAccessModal} 
+        onClose={() => {
+          setShowUserAccessModal(false);
+          setActivePortal("landing");
+        }}
+        onBack={() => setActivePortal("landing")}
+      />
+    );
   }
 
   return (
@@ -47,12 +62,11 @@ const Index = () => {
         </div>
 
         {/* Features Overview */}
-        <div className="grid md:grid-cols-4 gap-6 mb-12">
+        <div className="grid md:grid-cols-5 gap-6 mb-12">
           <Card className="text-center hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <Building2 className="h-8 w-8 text-blue-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900 mb-2">Sell Android Smartphones</h3>
-              <p className="text-sm text-gray-600">Manage multiple stores across regions</p>
             </CardContent>
           </Card>
           
@@ -60,7 +74,6 @@ const Index = () => {
             <CardContent className="p-6">
               <Users className="h-8 w-8 text-green-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900 mb-2">Achieve Monthly Target</h3>
-              <p className="text-sm text-gray-600">Track sales team performance</p>
             </CardContent>
           </Card>
           
@@ -68,7 +81,6 @@ const Index = () => {
             <CardContent className="p-6">
               <TrendingUp className="h-8 w-8 text-purple-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900 mb-2">Earn Points, Redeem for Incentives</h3>
-              <p className="text-sm text-gray-600">Comprehensive reporting and insights</p>
             </CardContent>
           </Card>
           
@@ -76,13 +88,19 @@ const Index = () => {
             <CardContent className="p-6">
               <Award className="h-8 w-8 text-orange-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900 mb-2">Monthly Bonanza</h3>
-              <p className="text-sm text-gray-600">Automated points calculations</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <UsersRound className="h-8 w-8 text-indigo-600 mx-auto mb-3" />
+              <h3 className="font-semibold text-gray-900 mb-2">User Access</h3>
             </CardContent>
           </Card>
         </div>
 
         {/* Portal Selection */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {/* Admin Portal */}
           <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <CardHeader className="text-center pb-4">
@@ -161,6 +179,42 @@ const Index = () => {
                 onClick={() => setActivePortal("user")}
               >
                 Access User Portal
+              </Button>
+            </CardContent>
+          </Card>
+          
+          {/* User Access Portal */}
+          <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <CardHeader className="text-center pb-4">
+              <div className="flex justify-center mb-4">
+                <div className="p-3 bg-indigo-100 rounded-full">
+                  <Store className="h-10 w-10 text-indigo-600" />
+                </div>
+              </div>
+              <CardTitle className="text-2xl text-gray-900">User Access</CardTitle>
+              <CardDescription className="text-gray-600">
+                Access for stores and cluster managers
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="text-xs border-indigo-200 text-indigo-700">Store</Badge>
+                  <span className="text-sm text-gray-700">Individual store access</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="text-xs border-indigo-200 text-indigo-700">Cluster</Badge>
+                  <span className="text-sm text-gray-700">Cluster manager view</span>
+                </div>
+              </div>
+              <Button 
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                onClick={() => {
+                  setActivePortal("user-access");
+                  setShowUserAccessModal(true);
+                }}
+              >
+                Access Portal
               </Button>
             </CardContent>
           </Card>

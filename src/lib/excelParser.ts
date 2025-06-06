@@ -6,10 +6,11 @@ export interface ExcelRowData {
   storeName: string;
   city: string;
   region: string;
+  clusterName: string; // Added this field
   totalTarget: number;
   totalAchievement: number;
   qualified: boolean;
-  totalPointsEarned: number; // Changed from totalIncentiveEarned
+  totalPointsEarned: number;
 }
 
 export const parseExcelFile = (file: File): Promise<ExcelRowData[]> => {
@@ -37,10 +38,11 @@ export const parseExcelFile = (file: File): Promise<ExcelRowData[]> => {
               storeName: columns[1] || '',
               city: columns[2] || '',
               region: columns[3] || '',
-              totalTarget: parseInt(columns[4]) || 0,
-              totalAchievement: parseInt(columns[5]) || 0,
-              qualified: columns[6]?.toLowerCase() === 'qualified',
-              totalPointsEarned: parseInt(columns[7]) || 0, // Changed from totalIncentiveEarned
+              clusterName: columns[4] || '', // Added this field
+              totalTarget: parseInt(columns[5]) || 0,
+              totalAchievement: parseInt(columns[6]) || 0,
+              qualified: columns[7]?.toLowerCase() === 'qualified',
+              totalPointsEarned: parseInt(columns[8]) || 0,
             };
           }).filter(row => row.storeCode && row.storeName);
         } else {
@@ -60,10 +62,11 @@ export const parseExcelFile = (file: File): Promise<ExcelRowData[]> => {
               storeName: String(row[1] || ''),
               city: String(row[2] || ''),
               region: String(row[3] || ''),
-              totalTarget: parseInt(String(row[4])) || 0,
-              totalAchievement: parseInt(String(row[5])) || 0,
-              qualified: String(row[6] || '').toLowerCase() === 'qualified',
-              totalPointsEarned: parseInt(String(row[7])) || 0, // Changed from totalIncentiveEarned
+              clusterName: String(row[4] || ''), // Added this field
+              totalTarget: parseInt(String(row[5])) || 0,
+              totalAchievement: parseInt(String(row[6])) || 0,
+              qualified: String(row[7] || '').toLowerCase() === 'qualified',
+              totalPointsEarned: parseInt(String(row[8])) || 0,
             }))
             .filter(row => row.storeCode && row.storeName);
         }
