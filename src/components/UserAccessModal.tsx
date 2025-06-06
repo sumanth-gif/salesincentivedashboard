@@ -33,17 +33,17 @@ export const UserAccessModal = ({ isOpen, onClose, onBack }: UserAccessModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Select User Access Type</DialogTitle>
+      <DialogContent className="sm:max-w-md border-2 border-orange-200">
+        <DialogHeader className="bg-gradient-to-r from-orange-50 to-orange-100 -m-6 mb-4 p-6 rounded-t-lg">
+          <DialogTitle className="text-orange-800">Select User Access Type</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <Button 
             onClick={() => setSelectedView("store")}
             variant="outline" 
-            className="flex items-center justify-start gap-4 p-6"
+            className="flex items-center justify-start gap-4 p-6 border-2 border-green-200 hover:border-green-400 hover:bg-green-50"
           >
-            <Building2 className="h-8 w-8 text-blue-600" />
+            <Building2 className="h-8 w-8 text-green-600" />
             <div className="text-left">
               <h3 className="font-semibold text-gray-900">Store</h3>
               <p className="text-sm text-gray-600">Access individual store data</p>
@@ -53,9 +53,9 @@ export const UserAccessModal = ({ isOpen, onClose, onBack }: UserAccessModalProp
           <Button 
             onClick={() => setSelectedView("cluster")}
             variant="outline"
-            className="flex items-center justify-start gap-4 p-6"
+            className="flex items-center justify-start gap-4 p-6 border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50"
           >
-            <Users className="h-8 w-8 text-green-600" />
+            <Users className="h-8 w-8 text-blue-600" />
             <div className="text-left">
               <h3 className="font-semibold text-gray-900">Cluster Manager</h3>
               <p className="text-sm text-gray-600">View cluster performance summary</p>
